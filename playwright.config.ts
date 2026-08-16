@@ -1,6 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
+ * `ng e2e` starts its own dev server and passes the address through
+ * PLAYWRIGHT_TEST_BASE_URL. When Playwright runs directly (CI), the
+ * webServer option below starts the app instead.
+ */
+const devServerUrl = process.env['PLAYWRIGHT_TEST_BASE_URL'];
+const baseURL = devServerUrl ?? 'http://localhost:4200';
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -18,11 +26,21 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env['PLAYWRIGHT_TEST_BASE_URL'] ?? 'http://localhost:4200',
+    baseURL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
+
+  /* Start the dev server unless `ng e2e` already did. */
+  webServer: devServerUrl
+    ? undefined
+    : {
+        command: 'npm run start:dev',
+        url: baseURL,
+        reuseExistingServer: !process.env['CI'],
+        timeout: 120_000,
+      },
 
   /* Configure projects for major browsers */
   projects: [

@@ -1,0 +1,5 @@
+/* The list scrolls on its own, so the search bar above it stays in place. */
+.packages-grid {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+}

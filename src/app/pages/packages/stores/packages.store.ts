@@ -1,6 +1,9 @@
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { environment } from '../../../../environments/environment';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { catchError, EMPTY, map, pipe, switchMap, tap } from 'rxjs';
 import { ApiTypes } from '../../../../types/api.types';
+import { PackagesService } from '../services/packages-service';
 
 type PackageWithExtra = ApiTypes['getPackages'][number] & {
   /**
@@ -24,6 +27,7 @@ export type PackagesState = {
   isLoading: boolean;
   hasError: boolean;
   errorMessage: string;
+  searchQuery: string;
 };
 
 const initialState: PackagesState = {
@@ -31,38 +35,62 @@ const initialState: PackagesState = {
   isLoading: true,
   hasError: false,
   errorMessage: '',
+  searchQuery: '',
 };
 
 export const PackagesStore = signalStore(
   withState(initialState),
-  withMethods((store) => ({
-    loadPackages() {
+  withComputed(({ packages, searchQuery }) => ({
+    filteredPackages: computed(() => {
+      const search = searchQuery().trim().toLocaleLowerCase();
+
+      if (search === '') {
+        return packages();
+      }
+
+      return packages().filter((pkg) => {
+        return pkg.id.toLowerCase().includes(search);
+      });
+    }),
+  })),
+  withMethods((store, packagesService = inject(PackagesService)) => ({
+    /**
+     * Load packages from the API and update the store state accordingly.
+     */
+    loadPackages: rxMethod<void>(
+      pipe(
+        tap(() => {
+          patchState(store, { isLoading: true, hasError: false, errorMessage: '' });
+        }),
+
+        switchMap(() =>
+          packagesService.getPackages().pipe(
+            map(mapAndSplitPackageId),
+            tap((packages) => {
+              patchState(store, { packages, isLoading: false });
+            }),
+            catchError((error: unknown) => {
+              patchState(store, {
+                hasError: true,
+                errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                isLoading: false,
+              });
+              return EMPTY;
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    /**
+     * Update the search query in the store state.
+     * @param query
+     */
+    setSearchQuery(query: string) {
       patchState(store, (state) => ({
         ...state,
-        isLoading: true,
-        hasError: false,
-        errorMessage: '',
+        searchQuery: query,
       }));
-
-      fetch(environment.apiUrl + '/packages')
-        .then((response) => response.json())
-        .then((data) => {
-          const mappedData = mapAndSplitPackageId(data);
-
-          patchState(store, (state) => ({
-            ...state,
-            packages: mappedData,
-            isLoading: false,
-          }));
-        })
-        .catch((error) => {
-          patchState(store, (state) => ({
-            ...state,
-            hasError: true,
-            errorMessage: error.message,
-            isLoading: false,
-          }));
-        });
     },
   })),
 );

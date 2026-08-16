@@ -1,1 +1,19 @@
-<p>packages-search works!</p>
+<div class="relative">
+  <input
+    type="search"
+    id="search"
+    class="block w-full p-3 pe-9 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+    placeholder="Search"
+    [value]="store.searchQuery()"
+    (input)="onSearchInput($event)"
+  />
+
+  <button
+    class="absolute top-1/2 right-3 -translate-y-1/2 text-body text-sm"
+    (click)="refreshData()"
+    type="button"
+    aria-label="Refresh packages"
+  >
+    <img class="w-4" src="icons/refresh-icon.svg" alt="" />
+  </button>
+</div>

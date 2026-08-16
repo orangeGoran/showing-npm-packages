@@ -16,4 +16,15 @@ export class PackagesService {
   getPackages(): Observable<ApiTypes['getPackages']> {
     return this.http.get<ApiTypes['getPackages']>(environment.apiUrl + '/packages');
   }
+
+  /**
+   * GET /packages/:id/dependencies
+   */
+  getDependencies(packageId: string): Observable<ApiTypes['getPackageDependencies']> {
+    const encodedPackageId = encodeURIComponent(packageId);
+
+    return this.http.get<ApiTypes['getPackageDependencies']>(
+      environment.apiUrl + `/packages/${encodedPackageId}/dependencies`,
+    );
+  }
 }

@@ -12,6 +12,13 @@
   </div>
 }
 
+<!-- EMPTY -->
+@else if (store.filteredPackages().length === 0) {
+  <div class="w-full flex flex-col items-center justify-center min-h-[50vh]">
+    No packages found.
+  </div>
+}
+
 <!-- PACKAGES LIST -->
 @else {
   <div class="packages-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">

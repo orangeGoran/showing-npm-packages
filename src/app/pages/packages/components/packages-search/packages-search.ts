@@ -40,6 +40,6 @@ export class PackagesSearch {
   }
 
   refreshData() {
-    this.store.loadPackages();
+    this.store.refreshPackages();
   }
 }

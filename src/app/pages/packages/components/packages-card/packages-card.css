@@ -1,5 +1,11 @@
-.placeholder:hover {
+.active {
   .header {
     background-color: var(--color-red-100);
+  }
+}
+
+.active-dependency {
+  .header {
+    background-color: var(--color-blue-100);
   }
 }

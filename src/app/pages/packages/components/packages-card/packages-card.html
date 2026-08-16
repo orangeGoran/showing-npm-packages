@@ -1,5 +1,14 @@
 <!-- CARD -->
-<div class="bg-white shadow-md rounded-lg placeholder cursor-pointer">
+<div
+  class="bg-white shadow-md rounded-lg placeholder cursor-pointer"
+  tabindex="0"
+  (mouseenter)="getDependencies()"
+  (mouseleave)="unsetHoverCard()"
+  (focusin)="getDependencies()"
+  (focusout)="unsetHoverCard()"
+  [class.active]="store.activePackageId() === package.id"
+  [class.active-dependency]="isActiveDependency()"
+>
   <!-- HEADER -->
   <div class="header flex items-center justify-between p-2 border-b">
     @if (package.id_second_part === '') {
@@ -26,5 +35,12 @@
       {{ package.dependencyCount | compactNumber }}
       {{ package.dependencyCount === 1 ? 'dependency' : 'dependencies' }}
     </p>
+
+    <!-- DEPENDENCIES FETCH STATUS -->
+    @if (dependenciesStatus() === 'loading') {
+      <p class="text-gray-400 text-sm mt-2">Loading dependencies...</p>
+    } @else if (dependenciesStatus() === 'error') {
+      <p class="text-red-600 text-sm mt-2">Could not load dependencies.</p>
+    }
   </div>
 </div>

@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, EMPTY, map, pipe, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, filter, map, mergeMap, pipe, tap } from 'rxjs';
 import { ApiTypes } from '../../../../types/api.types';
 import { PackagesService } from '../services/packages-service';
 
@@ -24,18 +24,29 @@ type LocalApiType = Omit<ApiTypes, 'getPackages'> & {
 
 export type PackagesState = {
   packages: LocalApiType['getPackages'];
+  loadedAtLeastOnce: boolean;
   isLoading: boolean;
   hasError: boolean;
   errorMessage: string;
   searchQuery: string;
+  packagesById: {
+    [packageId: string]: {
+      status: 'loading' | 'loaded' | 'error';
+      dependencies: ApiTypes['getPackageDependencies'];
+    };
+  };
+  activePackageId: string;
 };
 
 const initialState: PackagesState = {
   packages: [],
+  loadedAtLeastOnce: false,
   isLoading: true,
   hasError: false,
   errorMessage: '',
   searchQuery: '',
+  packagesById: {},
+  activePackageId: '',
 };
 
 export const PackagesStore = signalStore(
@@ -53,46 +64,140 @@ export const PackagesStore = signalStore(
       });
     }),
   })),
-  withMethods((store, packagesService = inject(PackagesService)) => ({
-    /**
-     * Load packages from the API and update the store state accordingly.
-     */
-    loadPackages: rxMethod<void>(
-      pipe(
-        tap(() => {
-          patchState(store, { isLoading: true, hasError: false, errorMessage: '' });
-        }),
+  withMethods((store, packagesService = inject(PackagesService)) => {
+    const fetchPackages = () => {
+      patchState(store, {
+        isLoading: true,
+        loadedAtLeastOnce: true,
+        hasError: false,
+        errorMessage: '',
+      });
 
-        switchMap(() =>
-          packagesService.getPackages().pipe(
-            map(mapAndSplitPackageId),
-            tap((packages) => {
-              patchState(store, { packages, isLoading: false });
-            }),
-            catchError((error: unknown) => {
-              patchState(store, {
-                hasError: true,
-                errorMessage: error instanceof Error ? error.message : 'Unknown error',
-                isLoading: false,
-              });
-              return EMPTY;
-            }),
-          ),
+      return packagesService.getPackages().pipe(
+        map(mapAndSplitPackageId),
+        tap((packages) => {
+          patchState(store, { packages, isLoading: false });
+        }),
+        catchError((error: unknown) => {
+          patchState(store, {
+            hasError: true,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            isLoading: false,
+          });
+          return EMPTY;
+        }),
+      );
+    };
+
+    return {
+      /**
+       * Initial load of packages from api
+       */
+      loadPackages: rxMethod<void>(
+        pipe(
+          filter(() => !store.loadedAtLeastOnce()),
+
+          // Using exhaust map, since there is no need to take
+          // last packages (just use the first one)
+          exhaustMap(() => fetchPackages()),
         ),
       ),
-    ),
 
-    /**
-     * Update the search query in the store state.
-     * @param query
-     */
-    setSearchQuery(query: string) {
-      patchState(store, (state) => ({
-        ...state,
-        searchQuery: query,
-      }));
-    },
-  })),
+      /**
+       * Refresh packages on demand
+       */
+      refreshPackages: rxMethod<void>(
+        pipe(
+          // Using exhaust map, since there is no need to take
+          // last packages (just use the first one)
+          exhaustMap(() => fetchPackages()),
+        ),
+      ),
+
+      /**
+       * Load package dependencies and set the hovered package card as active.
+       */
+      loadDependenciesAndSetActiveCard: rxMethod<string>(
+        pipe(
+          // Set hovered package id
+          tap((packageId) => {
+            patchState(store, {
+              activePackageId: packageId,
+            });
+          }),
+
+          // Continue with loading only if package is NOT already loaded
+          filter((packageId) => !store.packagesById()[packageId]),
+
+          tap((packageId) => {
+            // Set dependencies per package to loading
+            patchState(store, {
+              packagesById: {
+                ...store.packagesById(),
+                [packageId]: {
+                  status: 'loading',
+                  dependencies: [],
+                },
+              },
+            });
+          }),
+
+          // Using merge map in case user hovers over multiple
+          // packages in short time.
+          mergeMap((packageId) => {
+            return packagesService.getDependencies(packageId).pipe(
+              tap((dependencies) => {
+                patchState(store, {
+                  packagesById: {
+                    ...store.packagesById(),
+                    [packageId]: {
+                      status: 'loaded',
+                      dependencies,
+                    },
+                  },
+                });
+              }),
+              catchError(() => {
+                patchState(store, {
+                  packagesById: {
+                    ...store.packagesById(),
+                    [packageId]: {
+                      status: 'error',
+                      dependencies: [],
+                    },
+                  },
+                });
+                return EMPTY;
+              }),
+            );
+          }),
+        ),
+      ),
+
+      /**
+       * Unset hovered package card
+       * @param packageId represent old package id that needs to be unset
+       */
+      unsetHoverPackage(packageId: string) {
+        if (packageId === store.activePackageId()) {
+          patchState(store, {
+            activePackageId: '',
+          });
+        }
+      },
+
+      /**
+       * Update the search query in the store state.
+       * @param query
+       */
+      setSearchQuery(query: string) {
+        patchState(store, (state) => ({
+          ...state,
+          searchQuery: query,
+        }));
+      },
+    };
+  }),
 );
 
 /**

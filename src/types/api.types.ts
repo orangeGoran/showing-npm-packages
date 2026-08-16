@@ -11,4 +11,5 @@ export interface Package {
 
 export interface ApiTypes {
   getPackages: Package[];
+  getPackageDependencies: string[];
 }

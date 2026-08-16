@@ -38,7 +38,7 @@ export type PackagesState = {
   activePackageId: string;
 };
 
-const initialState: PackagesState = {
+export const packagesInitialState: PackagesState = {
   packages: [],
   loadedAtLeastOnce: false,
   isLoading: true,
@@ -50,7 +50,7 @@ const initialState: PackagesState = {
 };
 
 export const PackagesStore = signalStore(
-  withState(initialState),
+  withState(packagesInitialState),
   withComputed(({ packages, searchQuery }) => ({
     filteredPackages: computed(() => {
       const search = searchQuery().trim().toLocaleLowerCase();

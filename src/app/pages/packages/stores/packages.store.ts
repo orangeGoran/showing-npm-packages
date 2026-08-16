@@ -111,6 +111,14 @@ export const PackagesStore = signalStore(
           // Using exhaust map, since there is no need to take
           // last packages (just use the first one)
           exhaustMap(() => fetchPackages()),
+          tap(() => {
+            patchState(store, {
+              activePackageId: '',
+              packagesById: {},
+              hasError: false,
+              errorMessage: '',
+            });
+          }),
         ),
       ),
 

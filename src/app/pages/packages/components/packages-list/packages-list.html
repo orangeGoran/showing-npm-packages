@@ -21,9 +21,11 @@
 
 <!-- PACKAGES LIST -->
 @else {
-  <div class="packages-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+  <div
+    class="packages-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+  >
     @for (package of store.filteredPackages(); track package.id) {
-      <div class="">
+      <div class="" [attr.data-testid]="'item-' + package.id">
         <app-packages-card [package]="package"></app-packages-card>
       </div>
     }

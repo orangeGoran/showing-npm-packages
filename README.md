@@ -1,6 +1,7 @@
-# ShowingNpmPackages
+# Showing NPM Packages
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
+A small Angular application built as a technical test assignment. It fetches a list
+of npm packages from a provided API and renders them as a searchable grid of cards.
 
 ## Setup
 
@@ -49,6 +50,11 @@ For end-to-end (e2e) testing, run:
 ```bash
 npm run test:e2e
 ```
+
+## Possible improvements
+
+- Introduce openapi schema (single source of truth)
+- Implement CI/CD (or at least CI for running tests on github workers)
 
 ## Stay in touch
 

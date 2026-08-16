@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CompactNumberPipe } from '../../../../pipes/compact-number-pipe';
 import { PackagesState, PackagesStore } from '../../stores/packages.store';
 
@@ -10,8 +10,7 @@ import { PackagesState, PackagesStore } from '../../stores/packages.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PackagesCard {
-  @Input({ required: true })
-  package!: PackagesState['packages'][number];
+  package = input.required<PackagesState['packages'][number]>();
 
   store = inject(PackagesStore);
 
@@ -20,20 +19,20 @@ export class PackagesCard {
    */
   isActiveDependency = computed(() => {
     const activePackage = this.store.packagesById()[this.store.activePackageId()];
-    return (activePackage?.dependencies ?? []).includes(this.package.id);
+    return (activePackage?.dependencies ?? []).includes(this.package().id);
   });
 
   /**
    * Status of the dependencies fetch for this card, or undefined
    * if nothing has been fetched yet.
    */
-  dependenciesStatus = computed(() => this.store.packagesById()[this.package.id]?.status);
+  dependenciesStatus = computed(() => this.store.packagesById()[this.package().id]?.status);
 
   getDependencies() {
-    this.store.loadDependenciesAndSetActiveCard(this.package.id);
+    this.store.loadDependenciesAndSetActiveCard(this.package().id);
   }
 
   unsetHoverCard() {
-    this.store.unsetHoverPackage(this.package.id);
+    this.store.unsetHoverPackage(this.package().id);
   }
 }

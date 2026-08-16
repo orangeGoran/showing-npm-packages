@@ -2,6 +2,18 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
 
+## Setup
+
+Install nodejs and run next command in the root project
+
+```bash
+# install correct node version
+nvm install
+
+# before running the project later use correct node version
+nvm use
+```
+
 ## Development server
 
 To start a local development server, run:
@@ -11,20 +23,6 @@ npm run start:dev
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
 
 ## Building
 
@@ -52,8 +50,10 @@ For end-to-end (e2e) testing, run:
 npm run test:e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Stay in touch
 
-## Additional Resources
+- Author - [Goran Tubic](https://github.com/orangeGoran)
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## License
+
+This project is licensed under the MIT License.

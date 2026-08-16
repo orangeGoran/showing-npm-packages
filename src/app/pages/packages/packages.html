@@ -1,7 +1,27 @@
+<!-- SEARCH -->
 <app-packages-search></app-packages-search>
 
+<!-- LOADING -->
 @if (store.isLoading()) {
   <div class="w-full flex flex-col items-center justify-center min-h-[50vh]">
     Loading... Please wait.
+  </div>
+}
+
+<!-- ERROR -->
+@else if (store.hasError()) {
+  <div class="w-full flex flex-col items-center justify-center min-h-[50vh]">
+    Error: {{ store.errorMessage() }}
+  </div>
+}
+
+<!-- PACKAGES LIST -->
+@else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+    @for (package of store.packages(); track package.id) {
+      <div class="p-4">
+        <app-packages-card [package]="package"></app-packages-card>
+      </div>
+    }
   </div>
 }

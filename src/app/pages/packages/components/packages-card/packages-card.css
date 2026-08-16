@@ -1,0 +1,5 @@
+.placeholder:hover {
+  .header {
+    background-color: var(--color-red-100);
+  }
+}

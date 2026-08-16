@@ -1,1 +1,30 @@
-<p>packages-card works!</p>
+<!-- CARD -->
+<div class="bg-white shadow-md rounded-lg placeholder cursor-pointer">
+  <!-- HEADER -->
+  <div class="header flex items-center justify-between p-2 border-b">
+    @if (package.id_second_part === '') {
+      <h2 class="text-lg font-semibold">{{ package.id_first_part }}</h2>
+    } @else {
+      <h2 class="text-lg font-semibold">
+        <span class="text-orange-600!">{{ package.id_first_part }}/</span
+        >{{ package.id_second_part }}
+      </h2>
+    }
+  </div>
+
+  <!-- BODY -->
+  <div class="p-2">
+    <!-- WEEKLY DOWNLOADS -->
+    <p class="text-gray-600 mb-2">
+      {{ package.weeklyDownloads | compactNumber }}
+      {{ package.weeklyDownloads === 1 ? 'download' : 'downloads' }}
+      <img class="inline-block w-4" src="icons/download-icon.svg" alt="" />
+    </p>
+
+    <!-- DEPENDENCIES -->
+    <p class="text-gray-600">
+      {{ package.dependencyCount | compactNumber }}
+      {{ package.dependencyCount === 1 ? 'dependency' : 'dependencies' }}
+    </p>
+  </div>
+</div>

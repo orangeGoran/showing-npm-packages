@@ -10,5 +10,5 @@ export interface Package {
 }
 
 export interface ApiTypes {
-  getPackages: () => Promise<Package[]>;
+  getPackages: Package[];
 }

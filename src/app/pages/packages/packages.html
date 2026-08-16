@@ -1,1 +1,7 @@
 <app-packages-search></app-packages-search>
+
+@if (store.isLoading()) {
+  <div class="w-full flex flex-col items-center justify-center min-h-[50vh]">
+    Loading... Please wait.
+  </div>
+}
